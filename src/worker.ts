@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 type Bindings = {
 	IMAGE_TOKEN: string
 	ACCOUNT_ID: string
+	UPLOAD_BUCKET: R2Bucket
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -53,6 +54,41 @@ app.get('/images', async (c) => {
 			</body>
 		</html>
 	`)
+})
+
+
+app.get('/r2', async (c) => {
+	return c.html(`
+		<html>
+			<body>
+				<form action="http://127.0.0.1:8787/r2" method="post" enctype="multipart/form-data">
+					<input type="file" id="myFile" name="file" />
+					<input type="submit" />
+				</form>
+			</body>
+		</html>
+	`)
+})
+
+app.post('/r2', async (c) => {
+	const body = await c.req.parseBody();
+	const f = body['file']
+
+	// f が string の場合、bad requestにする
+	if (typeof f === 'string') {
+		return c.json({ error: 'bad request' }, 400)
+	}
+	try {
+		// ファイルタイプはここでは気にしない
+		const putobj = await c.env.UPLOAD_BUCKET.put("image", await f.arrayBuffer())
+		const getonj = await c.env.UPLOAD_BUCKET.get(putobj.key)
+		if (!getonj) {
+			return c.json({ error: 'not found' }, 404)
+		}
+		return c.newResponse(getonj.body)
+	} catch (e: any) {
+		return c.json({ error: e.message }, 500)
+	}
 })
 
 export default app
