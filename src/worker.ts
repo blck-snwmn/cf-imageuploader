@@ -35,12 +35,12 @@ app.get('/images', async (c) => {
 		console.log(resp.status, txt)
 		return c.json({ error: txt }, 500)
 	}
-	const jresp = await resp.json() as {
+	const jresp = await resp.json<{
 		result: {
 			id: string
 			uploadURL: string
 		}
-	}
+	}>()
 	const url = jresp.result.uploadURL
 
 	return c.html(`
