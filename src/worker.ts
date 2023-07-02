@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 
 type Bindings = {
-	TOKEN: string
+	IMAGE_TOKEN: string
 	ACCOUNT_ID: string
 }
 
@@ -26,7 +26,7 @@ app.get('/images', async (c) => {
 	const resp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${c.env.ACCOUNT_ID}/images/v2/direct_upload`, {
 		method: 'POST',
 		headers: {
-			Authorization: `Bearer ${c.env.TOKEN}`,
+			Authorization: `Bearer ${c.env.IMAGE_TOKEN}`,
 		},
 		body: fd
 	})
